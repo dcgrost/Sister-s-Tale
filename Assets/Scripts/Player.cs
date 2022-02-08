@@ -28,7 +28,6 @@ public class Player : MonoBehaviour
     private void Awake()
     {
         characterController = this.gameObject.GetComponent<CharacterController>();
-        shadowSystem.Stop();
     }
     private void FixedUpdate()
     {
