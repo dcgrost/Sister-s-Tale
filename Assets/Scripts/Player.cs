@@ -23,7 +23,9 @@ public class Player : MonoBehaviour
     Vector3 moveInput = Vector3.zero;
     Vector3 rotateInput = Vector3.zero;
     CharacterController characterController;
+    bool canMove = true;
     bool isDashing = false;
+    float gravityScaleTem = 0f;
 
     private void Awake()
     {
@@ -34,6 +36,10 @@ public class Player : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Move();
         Look();
+        if (Input.GetButton("Fire3") && !isDashing)
+        {
+            StartCoroutine(Dash());
+        }
     }
     private void Move()
     {
@@ -41,15 +47,7 @@ public class Player : MonoBehaviour
         {
             moveInput = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical"));
             moveInput = Vector3.ClampMagnitude(moveInput, 1f);
-            if (Input.GetButton("Fire3") && !isDashing)
-            {
-
-                StartCoroutine(Dash());
-            }
-            else
-            {
-                moveInput = transform.TransformDirection(moveInput * walkSpeed);
-            }
+            moveInput = transform.TransformDirection(moveInput * walkSpeed);
             if (Input.GetButtonDown("Jump"))
             {
                 playerAnimator.SetTrigger("Jump");
@@ -80,8 +78,13 @@ public class Player : MonoBehaviour
     {
         transform.transform.GetChild(0).gameObject.SetActive(false);
         shadowSystem.Play();
+        canMove = false;
+        gravityScaleTem = gravityScale;
+        gravityScale = 0f;
         yield return new WaitForSeconds(0.1f);
         characterController.Move(this.gameObject.transform.forward * dashDistance);
         transform.transform.GetChild(0).gameObject.SetActive(true);
+        canMove = true;
+        gravityScale = gravityScaleTem;
     }
 }
