@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(CharacterController))]
 public class Player : MonoBehaviour
@@ -12,6 +13,7 @@ public class Player : MonoBehaviour
     [Header("Movement")]
     public FixedJoystick joystick;
     public float walkSpeed = 5f;
+    public float walkBackSpeed = 3f;
     public float dashDistance = 5f;
     public float dashCD = 5f;
     [Header("Rotation")]
@@ -20,14 +22,21 @@ public class Player : MonoBehaviour
     public float jumpHeight = 1.9f;
     [Header("Effects")]
     public ParticleSystem shadowSystem;
+    public Image cooldownDash;
 
     Vector3 moveInput = Vector3.zero;
     Vector3 rotateInput = Vector3.zero;
     CharacterController characterController;
     bool isDashing = false;
+    bool isMoving  = false;
     float gravityScaleTem = 0f;
     bool jumpButton = false;
     bool canMove = true;
+    bool dashIsCoilingdown = false;
+    GameObject target = null;
+    GameObject[] targets = null;
+    float minDistance = 10f;
+    int tempi;
 
     private void Awake()
     {
@@ -40,6 +49,12 @@ public class Player : MonoBehaviour
             Move();
             Look();
         }
+        if (dashIsCoilingdown)
+        {
+            cooldownDash.fillAmount -= 1f / (dashCD + 0.1f) * Time.deltaTime;
+        }
+        playerAnimator.SetBool("IsGrounded", characterController.isGrounded);
+        playerAnimator.SetBool("IsMoving", isMoving);
     }
     #region Move&Look
     private void Move()
@@ -48,7 +63,14 @@ public class Player : MonoBehaviour
         {
             moveInput = new Vector3(joystick.Direction.x, 0f, joystick.Direction.y);
             moveInput = Vector3.ClampMagnitude(moveInput, 1f);
-            moveInput = transform.TransformDirection(moveInput * walkSpeed);
+            if (joystick.Direction.y > -0.25f)
+            {
+                moveInput = transform.TransformDirection(moveInput * walkSpeed);
+            }
+            else
+            {
+                moveInput = transform.TransformDirection(moveInput * walkBackSpeed);
+            }
             if (jumpButton)
             {
                 Jump();
@@ -56,12 +78,27 @@ public class Player : MonoBehaviour
         }
         moveInput.y += gravityScale * Time.deltaTime;
         characterController.Move(moveInput * Time.deltaTime);
-        playerAnimator.SetFloat("Speed", moveInput.magnitude);
+        playerAnimator.SetFloat("Direction", joystick.Direction.y);
+        if (moveInput.magnitude > 0.4f)
+        {
+            isMoving = true;
+        }
+        else
+        {
+            isMoving = false;
+        }
     }
     private void Look()
     {
         rotateInput.x = joystick.Direction.x * rotationSensivility * Time.deltaTime;
-        transform.Rotate(Vector3.up * rotateInput.x);
+        if (joystick.Direction.y > -0.25f)
+        {
+            transform.Rotate(Vector3.up * rotateInput.x);
+        }
+        else
+        {
+            transform.Rotate(Vector3.up * -rotateInput.x);
+        }
     }
     #endregion
     #region Dash
@@ -69,6 +106,8 @@ public class Player : MonoBehaviour
     {
         StartCoroutine(InDash());
         isDashing = true;
+        cooldownDash.fillAmount = 1f;
+        dashIsCoilingdown = true;
         yield return new WaitForSeconds(dashCD + 0.1f);
         isDashing = false;
     }
@@ -109,7 +148,36 @@ public class Player : MonoBehaviour
     }
     #endregion
     #region Ability
-    public void Ability()
+    public void TargetSelector()
+    {
+        targets = GameObject.FindGameObjectsWithTag("Interactable");
+        float previousDistance = minDistance;
+        for (int i = 0; i < targets.Length; i++)
+        {
+            float distance = (targets[i].transform.position - this.transform.position).magnitude;
+            if (distance < minDistance)
+            {
+                if (distance <= previousDistance)//falta agregar validación de vista en obejeto && targets[i].Validacion
+                {
+                    previousDistance = distance;
+                    tempi = i;
+                }
+            }
+        }
+        if((targets[tempi].transform.position-this.transform.position).magnitude < minDistance)
+        {
+            target = targets[tempi];
+        }
+        else
+        {
+            target = null;
+        }
+        if (target != null)
+        {
+            Ability();
+        }
+    }
+    private void Ability()
     {
         if (characterController.isGrounded)
         {
