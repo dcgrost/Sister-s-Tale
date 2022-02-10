@@ -121,7 +121,6 @@ public class Player : MonoBehaviour
         canMove = false;
         playerAnimator.SetTrigger("Ability");
         yield return new WaitForSeconds(1f);
-        Debug.Log(canMove);
         canMove = true;
     }
     #endregion
