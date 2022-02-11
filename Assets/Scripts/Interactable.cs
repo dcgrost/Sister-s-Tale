@@ -9,11 +9,16 @@ public class Interactable : MonoBehaviour
 {
     [Header("References")]
     public InteractableType interactableType;
+    public GameObject player;
+    public GameObject particleFather;
     [Header("General")]
     public bool isTargetable;
     public float actionForce = 10f;
     [Header("Effects")]
-    public GameObject activeObject;
+    public GameObject pullParticle;
+    public GameObject pushParticle;
+
+    GameObject activeParticle;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -22,6 +27,10 @@ public class Interactable : MonoBehaviour
             isTargetable = true;
         }
     }
+    private void OnTriggerStay(Collider other)
+    {
+        RotateParticles();
+    }
     private void OnTriggerExit(Collider other)
     {
         if (other.tag == "Player")
@@ -29,26 +38,50 @@ public class Interactable : MonoBehaviour
             isTargetable = false;
         }
     }
+    private void Start()
+    {
+        ParticleSelector();
+    }
     private void FixedUpdate()
     {
-        if (isTargetable)
-        {
-            activeObject.SetActive(true);
-        }
-        else
-        {
-            activeObject.SetActive(false);
-        }
+        ParticleActiver();
     }
-    public void Action(Vector3 playerPosition)
+    private void ParticleSelector()
     {
-        if(interactableType == InteractableType.Push)
+        if (interactableType == InteractableType.Push)
         {
-            this.gameObject.GetComponent<Rigidbody>().AddForce((this.gameObject.transform.position - playerPosition).normalized * actionForce, ForceMode.Impulse);
+            activeParticle = pushParticle;
         }
         if (interactableType == InteractableType.Pull)
         {
-            this.gameObject.GetComponent<Rigidbody>().AddForce(-(this.gameObject.transform.position - playerPosition).normalized * actionForce, ForceMode.Impulse);
+            activeParticle = pullParticle;
+        }
+    }
+    private void ParticleActiver()
+    {
+        if (isTargetable)
+        {
+            activeParticle.SetActive(true);
+        }
+        else
+        {
+            activeParticle.SetActive(false);
+        }
+    }
+    private void RotateParticles()
+    {
+        particleFather.transform.LookAt(player.transform);
+    }
+    public void Action(Vector3 playerPosition)
+    {
+        Vector3 direction = new Vector3(gameObject.transform.position.x - playerPosition.x, 0, gameObject.transform.position.z - playerPosition.z);
+        if (interactableType == InteractableType.Push)
+        {
+            this.gameObject.GetComponent<Rigidbody>().AddForce(direction.normalized * actionForce, ForceMode.Impulse);
+        }
+        if (interactableType == InteractableType.Pull)
+        {
+            this.gameObject.GetComponent<Rigidbody>().AddForce(-direction.normalized * actionForce, ForceMode.Impulse);
         }
     }
 }
