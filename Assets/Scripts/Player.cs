@@ -8,6 +8,7 @@ public class Player : MonoBehaviour
     [Header("References")]
     public Camera playerCamera;
     public Animator playerAnimator;
+    public GameObject target = null;
     [Header("General")]
     public float gravityScale = -20f;
     [Header("Movement")]
@@ -33,7 +34,6 @@ public class Player : MonoBehaviour
     bool jumpButton = false;
     bool canMove = true;
     bool dashIsCoilingdown = false;
-    GameObject target = null;
     GameObject[] targets = null;
     float minDistance = 10f;
     int tempi;
@@ -150,6 +150,7 @@ public class Player : MonoBehaviour
     #region Ability
     public void TargetSelector()
     {
+        target = null;
         targets = GameObject.FindGameObjectsWithTag("Interactable");
         float previousDistance = minDistance;
         for (int i = 0; i < targets.Length; i++)
@@ -157,7 +158,7 @@ public class Player : MonoBehaviour
             float distance = (targets[i].transform.position - this.transform.position).magnitude;
             if (distance < minDistance)
             {
-                if (distance <= previousDistance)//falta agregar validación de vista en obejeto && targets[i].Validacion
+                if (distance <= previousDistance && targets[i].GetComponent<Interactable>().isTargetable)
                 {
                     previousDistance = distance;
                     tempi = i;
@@ -172,12 +173,16 @@ public class Player : MonoBehaviour
         {
             target = null;
         }
+        if (!target.GetComponent<Interactable>().isTargetable)
+        {
+            target = null;
+        }
         if (target != null)
         {
-            Ability();
+            LaunchAbility();
         }
     }
-    private void Ability()
+    private void LaunchAbility()
     {
         if (characterController.isGrounded)
         {
@@ -188,8 +193,13 @@ public class Player : MonoBehaviour
     {
         canMove = false;
         playerAnimator.SetTrigger("Ability");
+        Ability();
         yield return new WaitForSeconds(1f);
         canMove = true;
+    }
+    private void Ability()
+    {
+        target.GetComponent<Interactable>().Action(this.gameObject.transform.position);
     }
     #endregion
 }
