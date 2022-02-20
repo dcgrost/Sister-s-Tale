@@ -29,7 +29,7 @@ public class Player : MonoBehaviour
     Vector3 rotateInput = Vector3.zero;
     CharacterController characterController;
     bool isDashing = false;
-    bool isMoving  = false;
+    public bool isMoving  = false;
     float gravityScaleTem = 0f;
     bool jumpButton = false;
     bool canMove = true;
@@ -37,6 +37,7 @@ public class Player : MonoBehaviour
     GameObject[] targets = null;
     float minDistance = 10f;
     int tempi;
+    float timeAnim;
 
     private void Awake()
     {
@@ -191,10 +192,18 @@ public class Player : MonoBehaviour
     }
     IEnumerator WaitAbility()
     {
+        if (target.GetComponent<Interactable>().interactableType == InteractableType.Push)
+        {
+            timeAnim = 0.5f;
+        }
+        else
+        {
+            timeAnim = 0.75f;
+        }
         canMove = false;
         playerAnimator.SetTrigger("Ability");
+        yield return new WaitForSeconds(timeAnim);
         Ability();
-        yield return new WaitForSeconds(1f);
         canMove = true;
     }
     private void Ability()
