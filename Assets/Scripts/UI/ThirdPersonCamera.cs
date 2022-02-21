@@ -20,14 +20,7 @@ public class ThirdPersonCamera : MonoBehaviour
     }
     void LateUpdate()
     {
-        if (player.GetComponent<Player>().isMoving)
-        {
-            ResetRotation();
-        }
-        else
-        {
-            CameraRotation();
-        }
+        CameraRotation();
     }
     void CameraRotation()
     {

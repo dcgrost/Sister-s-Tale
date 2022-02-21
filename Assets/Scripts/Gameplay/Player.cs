@@ -9,6 +9,7 @@ public class Player : MonoBehaviour
     public Camera playerCamera;
     public Animator playerAnimator;
     public GameObject target = null;
+    public GameObject cameraHolder;
     [Header("General")]
     public float gravityScale = -20f;
     [Header("Movement")]
@@ -38,6 +39,9 @@ public class Player : MonoBehaviour
     float minDistance = 10f;
     int tempi;
     float timeAnim;
+    Vector3 moveWithCamera;
+    Vector3 cameraForward;
+    Vector3 cameraRight;
 
     private void Awake()
     {
@@ -45,10 +49,11 @@ public class Player : MonoBehaviour
     }
     private void FixedUpdate()
     {
+        CameraDirection();
         if (canMove)
         {
             Move();
-            Look();
+            //Look();
         }
         if (dashIsCoilingdown)
         {
@@ -64,21 +69,16 @@ public class Player : MonoBehaviour
         {
             moveInput = new Vector3(joystick.Direction.x, 0f, joystick.Direction.y);
             moveInput = Vector3.ClampMagnitude(moveInput, 1f);
-            if (joystick.Direction.y > -0.25f)
-            {
-                moveInput = transform.TransformDirection(moveInput * walkSpeed);
-            }
-            else
-            {
-                moveInput = transform.TransformDirection(moveInput * walkBackSpeed);
-            }
+            moveWithCamera = moveInput.x * cameraRight + moveInput.z * cameraForward;
+            moveWithCamera = transform.TransformDirection(moveWithCamera * walkSpeed);
             if (jumpButton)
             {
                 Jump();
             }
         }
-        moveInput.y += gravityScale * Time.deltaTime;
-        characterController.Move(moveInput * Time.deltaTime);
+        moveWithCamera.y += gravityScale * Time.deltaTime;
+        characterController.Move(moveWithCamera * Time.deltaTime);
+        //transform.forward = moveInput;
         playerAnimator.SetFloat("Direction", joystick.Direction.y);
         if (moveInput.magnitude > 0.4f)
         {
@@ -91,15 +91,20 @@ public class Player : MonoBehaviour
     }
     private void Look()
     {
-        rotateInput.x = joystick.Direction.x * rotationSensivility * Time.deltaTime;
-        if (joystick.Direction.y > -0.25f)
+        if (isMoving)
         {
-            transform.Rotate(Vector3.up * rotateInput.x);
+            /*rotateInput.x = joystick.Direction.x * rotationSensivility * Time.deltaTime;
+            transform.Rotate(Vector3.up * rotateInput.x);*/
         }
-        else
-        {
-            transform.Rotate(Vector3.up * -rotateInput.x);
-        }
+    }
+    private void CameraDirection()
+    {
+        cameraForward = playerCamera.transform.forward;
+        cameraRight = playerCamera.transform.right;
+        cameraForward.y = 0;
+        cameraRight.y = 0;
+        cameraForward = cameraForward.normalized;
+        cameraRight = cameraRight.normalized;
     }
     #endregion
     #region Dash
@@ -119,7 +124,7 @@ public class Player : MonoBehaviour
         gravityScaleTem = gravityScale;
         gravityScale = 0f;
         yield return new WaitForSeconds(0.1f);
-        characterController.Move(this.gameObject.transform.forward * dashDistance);
+        characterController.Move(cameraForward * dashDistance);
         transform.transform.GetChild(0).gameObject.SetActive(true);
         gravityScale = gravityScaleTem;
     }
@@ -135,7 +140,7 @@ public class Player : MonoBehaviour
     private void Jump()
     {
         playerAnimator.SetTrigger("Jump");
-        moveInput.y = Mathf.Sqrt(jumpHeight * -2f * gravityScale);
+        moveWithCamera.y = Mathf.Sqrt(jumpHeight * -2f * gravityScale);
     }
     public void JumpButton()
     {
