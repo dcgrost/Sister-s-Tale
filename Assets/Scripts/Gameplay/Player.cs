@@ -9,17 +9,13 @@ public class Player : MonoBehaviour
     public Camera playerCamera;
     public Animator playerAnimator;
     public GameObject target = null;
-    public GameObject cameraHolder;
     [Header("General")]
     public float gravityScale = -20f;
     [Header("Movement")]
     public FixedJoystick joystick;
     public float walkSpeed = 5f;
-    public float walkBackSpeed = 3f;
     public float dashDistance = 5f;
     public float dashCD = 5f;
-    [Header("Rotation")]
-    [Range(100f, 400f)] public float rotationSensivility = 300;
     [Header("Jump")]
     public float jumpHeight = 1.9f;
     [Header("Effects")]
@@ -27,14 +23,13 @@ public class Player : MonoBehaviour
     public Image cooldownDash;
 
     Vector3 moveInput = Vector3.zero;
-    Vector3 rotateInput = Vector3.zero;
     CharacterController characterController;
     bool isDashing = false;
     public bool isMoving  = false;
     float gravityScaleTem = 0f;
     bool jumpButton = false;
     bool canMove = true;
-    bool dashIsCoilingdown = false;
+    bool dashIsCoolingdown = false;
     GameObject[] targets = null;
     float minDistance = 10f;
     int tempi;
@@ -53,9 +48,8 @@ public class Player : MonoBehaviour
         if (canMove)
         {
             Move();
-            //Look();
         }
-        if (dashIsCoilingdown)
+        if (dashIsCoolingdown)
         {
             cooldownDash.fillAmount -= 1f / (dashCD + 0.1f) * Time.deltaTime;
         }
@@ -70,15 +64,14 @@ public class Player : MonoBehaviour
             moveInput = new Vector3(joystick.Direction.x, 0f, joystick.Direction.y);
             moveInput = Vector3.ClampMagnitude(moveInput, 1f);
             moveWithCamera = moveInput.x * cameraRight + moveInput.z * cameraForward;
-            moveWithCamera = transform.TransformDirection(moveWithCamera * walkSpeed);
+            characterController.transform.LookAt(characterController.transform.position + moveWithCamera);
             if (jumpButton)
             {
                 Jump();
             }
         }
         moveWithCamera.y += gravityScale * Time.deltaTime;
-        characterController.Move(moveWithCamera * Time.deltaTime);
-        //transform.forward = moveInput;
+        characterController.Move(moveWithCamera * walkSpeed * Time.deltaTime);
         playerAnimator.SetFloat("Direction", joystick.Direction.y);
         if (moveInput.magnitude > 0.4f)
         {
@@ -87,14 +80,6 @@ public class Player : MonoBehaviour
         else
         {
             isMoving = false;
-        }
-    }
-    private void Look()
-    {
-        if (isMoving)
-        {
-            /*rotateInput.x = joystick.Direction.x * rotationSensivility * Time.deltaTime;
-            transform.Rotate(Vector3.up * rotateInput.x);*/
         }
     }
     private void CameraDirection()
@@ -113,19 +98,19 @@ public class Player : MonoBehaviour
         StartCoroutine(InDash());
         isDashing = true;
         cooldownDash.fillAmount = 1f;
-        dashIsCoilingdown = true;
+        dashIsCoolingdown = true;
         yield return new WaitForSeconds(dashCD + 0.1f);
         isDashing = false;
     }
     IEnumerator InDash()
     {
-        transform.transform.GetChild(0).gameObject.SetActive(false);
+        transform.GetChild(0).gameObject.SetActive(false);
         shadowSystem.Play();
         gravityScaleTem = gravityScale;
         gravityScale = 0f;
         yield return new WaitForSeconds(0.1f);
         characterController.Move(cameraForward * dashDistance);
-        transform.transform.GetChild(0).gameObject.SetActive(true);
+        transform.GetChild(0).gameObject.SetActive(true);
         gravityScale = gravityScaleTem;
     }
     public void DashButton()
@@ -197,6 +182,7 @@ public class Player : MonoBehaviour
     }
     IEnumerator WaitAbility()
     {
+        transform.LookAt(target.transform);
         if (target.GetComponent<Interactable>().interactableType == InteractableType.Push)
         {
             timeAnim = 0.5f;

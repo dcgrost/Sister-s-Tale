@@ -18,6 +18,10 @@ public class ThirdPersonCamera : MonoBehaviour
     {
         initialState = transform.localRotation;
     }
+    private void FixedUpdate()
+    {
+        transform.position = player.transform.position;
+    }
     void LateUpdate()
     {
         CameraRotation();
