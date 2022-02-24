@@ -73,7 +73,7 @@ public class Player : MonoBehaviour
         moveWithCamera.y += gravityScale * Time.deltaTime;
         characterController.Move(moveWithCamera * walkSpeed * Time.deltaTime);
         playerAnimator.SetFloat("Direction", joystick.Direction.y);
-        if (moveInput.magnitude > 0.4f)
+        if (moveInput.magnitude > 0.1f)
         {
             isMoving = true;
         }
