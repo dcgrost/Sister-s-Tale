@@ -4902,7 +4902,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   interactableType: 0
-  player: {fileID: 0}
+  player: {fileID: 3573961348917229060, guid: f2ceb289008530b458d91f86442783ad, type: 3}
   particleFather: {fileID: 3887062268681545687}
   isTargetable: 0
   actionForce: 10
