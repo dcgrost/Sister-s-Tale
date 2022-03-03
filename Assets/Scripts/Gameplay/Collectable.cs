@@ -2,12 +2,14 @@ using UnityEngine;
 
 public class Collectable : MonoBehaviour
 {
+    public GameObject collectableControl;
     public Vector3 positionOffset, tempPosition;
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Player")
         {
+            collectableControl.GetComponent<CollectableControl>().NewCollectable();
             Destroy(gameObject);
         }
     }

@@ -9,6 +9,7 @@ public class Player : MonoBehaviour
     public Camera playerCamera;
     public Animator playerAnimator;
     public GameObject target = null;
+    public GameObject pausePanel;
     [Header("General")]
     public float gravityScale = -20f;
     [Header("Movement")]
@@ -200,6 +201,18 @@ public class Player : MonoBehaviour
     private void Ability()
     {
         target.GetComponent<Interactable>().Action(this.gameObject.transform.position);
+    }
+    #endregion
+    #region Pause
+    public void PauseGame()
+    {
+        pausePanel.SetActive(true);
+        Time.timeScale = 0;
+    }
+    public void ResumeGame()
+    {
+        pausePanel.SetActive(false);
+        Time.timeScale = 1;
     }
     #endregion
 }
