@@ -5,6 +5,7 @@ public class CollectableControl : MonoBehaviour
 {
     public Text updateText;
     public int currentCollectable;
+    public AudioSource collectableSound;
 
     private void Awake()
     {
@@ -14,5 +15,9 @@ public class CollectableControl : MonoBehaviour
     {
         currentCollectable++;
         updateText.text = currentCollectable.ToString();
+    }
+    public void PlaySound()
+    {
+        collectableSound.Play();
     }
 }

@@ -10,6 +10,7 @@ public class Collectable : MonoBehaviour
         if (other.tag == "Player")
         {
             collectableControl.GetComponent<CollectableControl>().NewCollectable();
+            collectableControl.GetComponent<CollectableControl>().PlaySound();
             Destroy(gameObject);
         }
     }

@@ -12,6 +12,7 @@ public class Player : MonoBehaviour
     public GameObject pausePanel;
     [Header("General")]
     public float gravityScale = -20f;
+    public AudioSource audioSource;
     [Header("Movement")]
     public FixedJoystick joystick;
     public float walkSpeed = 5f;
@@ -100,6 +101,7 @@ public class Player : MonoBehaviour
         isDashing = true;
         cooldownDash.fillAmount = 1f;
         dashIsCoolingdown = true;
+        audioSource.Play();
         yield return new WaitForSeconds(dashCD + 0.1f);
         isDashing = false;
     }

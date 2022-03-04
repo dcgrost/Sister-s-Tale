@@ -142,3 +142,4 @@ MonoBehaviour:
   collectableControl: {fileID: 8306619353265770625, guid: 4c760661cb0e73d4383f04ef4adc4a77, type: 3}
   positionOffset: {x: 0, y: 0, z: 0}
   tempPosition: {x: 0, y: 0, z: 0}
+  collectableSound: {fileID: 7807968347584809390, guid: 4c760661cb0e73d4383f04ef4adc4a77, type: 3}
