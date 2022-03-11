@@ -23,15 +23,16 @@ public class Player : MonoBehaviour
     [Header("Effects")]
     public ParticleSystem shadowSystem;
     public Image cooldownDash;
+    public Image cooldownAbility;
 
     Vector3 moveInput = Vector3.zero;
     CharacterController characterController;
     bool isDashing = false;
+    bool isAbility = false;
     public bool isMoving  = false;
     float gravityScaleTem = 0f;
     bool jumpButton = false;
     bool canMove = true;
-    bool dashIsCoolingdown = false;
     GameObject[] targets = null;
     float minDistance = 10f;
     int tempi;
@@ -51,10 +52,8 @@ public class Player : MonoBehaviour
         {
             Move();
         }
-        if (dashIsCoolingdown)
-        {
-            cooldownDash.fillAmount -= 1f / (dashCD + 0.1f) * Time.deltaTime;
-        }
+        cooldownDash.fillAmount -= 1f / (dashCD + 0.1f) * Time.deltaTime;
+        cooldownAbility.fillAmount -= 1f / (3f + 0.1f) * Time.deltaTime;
         playerAnimator.SetBool("IsGrounded", characterController.isGrounded);
         playerAnimator.SetBool("IsMoving", isMoving);
     }
@@ -100,7 +99,6 @@ public class Player : MonoBehaviour
         StartCoroutine(InDash());
         isDashing = true;
         cooldownDash.fillAmount = 1f;
-        dashIsCoolingdown = true;
         audioSource.Play();
         yield return new WaitForSeconds(dashCD + 0.1f);
         isDashing = false;
@@ -144,6 +142,10 @@ public class Player : MonoBehaviour
     #region Ability
     public void TargetSelector()
     {
+        if (!isAbility)
+        {
+
+        }
         target = null;
         targets = GameObject.FindGameObjectsWithTag("Interactable");
         float previousDistance = minDistance;
@@ -178,7 +180,7 @@ public class Player : MonoBehaviour
     }
     private void LaunchAbility()
     {
-        if (characterController.isGrounded)
+        if (characterController.isGrounded && !isAbility)
         {
             StartCoroutine(WaitAbility());
         }
@@ -203,6 +205,21 @@ public class Player : MonoBehaviour
     private void Ability()
     {
         target.GetComponent<Interactable>().Action(this.gameObject.transform.position);
+    }
+    IEnumerator AbilityCD()
+    {
+        TargetSelector();
+        cooldownAbility.fillAmount = 1f;
+        isAbility = true;
+        yield return new WaitForSeconds(3f);
+        isAbility = false;
+    }
+    public void AbilityButton()
+    {
+        if (!isAbility)
+        {
+            StartCoroutine(AbilityCD());
+        }
     }
     #endregion
     #region Pause
